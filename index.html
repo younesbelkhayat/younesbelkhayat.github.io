@@ -262,6 +262,22 @@
                 </div>
                 
                 <div class="form-group">
+                    <label for="partsFiscales">Nombre de parts fiscales du foyer</label>
+                    <input type="number" id="partsFiscales" placeholder="Ex: 2" min="0.5" step="0.5" value="1">
+                    <small style="color: #6c757d; font-size: 0.9em; margin-top: 5px; display: block;">
+                        💡 Célibataire: 1 part, Couple: 2 parts, +0,5 par enfant
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="autresRevenus">Autres revenus du foyer imposés à l'IR (€)</label>
+                    <input type="number" id="autresRevenus" placeholder="Ex: 25000" min="0" value="0">
+                    <small style="color: #6c757d; font-size: 0.9em; margin-top: 5px; display: block;">
+                        💡 Revenus du conjoint, revenus fonciers, etc.
+                    </small>
+                </div>
+                
+                <div class="form-group">
                     <label for="dividendes">Dividendes distribués (€)</label>
                     <input type="number" id="dividendes" placeholder="Auto-calculé" min="0" readonly style="background-color: #f8f9fa; cursor: not-allowed;">
                     <small style="color: #6c757d; font-size: 0.9em; margin-top: 5px; display: block;">
@@ -291,7 +307,12 @@
                 
                 <div class="result-card">
                     <div class="result-main" id="netTotal">0 €</div>
-                    <div class="result-label">Revenu net total dans la poche</div>
+                    <div class="result-label">Revenu net total dans la poche (annuel)</div>
+                </div>
+                
+                <div class="result-card" style="border-left-color: #e74c3c;">
+                    <div class="result-main" id="netMensuel" style="color: #e74c3c;">0 €</div>
+                    <div class="result-label">Revenu net mensuel moyen</div>
                 </div>
                 
                 <div class="breakdown">
@@ -333,23 +354,28 @@
             }
         }
 
-        function calculateIR(revenuImposable) {
-            let impot = 0;
-            let restant = revenuImposable;
+        function calculateIR(revenuImposable, partsFiscales = 1) {
+            const quotientFamilial = revenuImposable / partsFiscales;
+            let impotParPart = 0;
+            let restant = quotientFamilial;
             
             for (let tranche of baremeIR) {
                 if (restant <= 0) break;
                 
                 let imposableTranche = Math.min(restant, tranche.max - tranche.min + 1);
-                if (revenuImposable > tranche.min) {
-                    impot += imposableTranche * tranche.taux;
+                if (quotientFamilial > tranche.min) {
+                    impotParPart += imposableTranche * tranche.taux;
                     restant -= imposableTranche;
                 }
             }
             
-            // Application de la décote
-            const decote = revenuImposable <= 14000 ? Math.max(0, 889 - impot * 0.75) : 0;
-            return Math.max(0, impot - decote);
+            let impotTotal = impotParPart * partsFiscales;
+            
+            // Application de la décote (ajustée selon les parts)
+            const plafondDecote = partsFiscales === 1 ? 889 : (partsFiscales <= 2 ? 1470 : 1470);
+            const decote = impotTotal <= plafondDecote * 1.5 ? Math.max(0, plafondDecote - impotTotal * 0.75) : 0;
+            
+            return Math.max(0, impotTotal - decote);
         }
 
         function calculateChargesSociales(salaireBrut) {
@@ -385,6 +411,8 @@
             const ca = parseFloat(document.getElementById('ca').value) || 0;
             const charges = parseFloat(document.getElementById('charges').value) || 0;
             const salaireBrut = parseFloat(document.getElementById('salaire').value) || 0;
+            const partsFiscales = parseFloat(document.getElementById('partsFiscales').value) || 1;
+            const autresRevenus = parseFloat(document.getElementById('autresRevenus').value) || 0;
             const dividendRegime = document.querySelector('input[name="dividendOption"]:checked').value;
 
             // Calculs SASU
@@ -402,8 +430,12 @@
             // Salaire net
             const salaireNet = salaireBrut - chargesSociales.salariales;
 
-            // Calcul IR sur salaire
-            const irSalaire = calculateIR(salaireNet);
+            // Calcul IR sur l'ensemble des revenus du foyer
+            let revenuImposableFoyer = salaireNet + autresRevenus;
+            let irFoyerSansDiv = calculateIR(revenuImposableFoyer, partsFiscales);
+            let irSurAutresRevenus = calculateIR(autresRevenus, partsFiscales);
+            let irSalaire = irFoyerSansDiv - irSurAutresRevenus;
+
             const salaireNetApresIR = salaireNet - irSalaire;
 
             // Calcul fiscal dividendes
@@ -418,7 +450,9 @@
                 } else {
                     // Barème progressif avec abattement 40%
                     const dividendesApresAbattement = dividendesReel * 0.60;
-                    const irDividendes = calculateIR(salaireNet + dividendesApresAbattement) - irSalaire;
+                    const revenuFoyerAvecDiv = revenuImposableFoyer + dividendesApresAbattement;
+                    const irFoyerAvecDiv = calculateIR(revenuFoyerAvecDiv, partsFiscales);
+                    const irDividendes = irFoyerAvecDiv - irFoyerSansDiv;
                     const prelevementsSociaux = dividendesReel * 0.172;
                     impotDividendes = irDividendes + prelevementsSociaux;
                     dividendesNetApresImpots = dividendesReel - impotDividendes;
@@ -430,6 +464,7 @@
 
             // Affichage des résultats
             document.getElementById('netTotal').textContent = formatCurrency(totalNet);
+            document.getElementById('netMensuel').textContent = formatCurrency(totalNet / 12);
 
             // Détail des calculs
             const breakdownContent = `
@@ -463,6 +498,10 @@
                 </div>
                 <hr style="margin: 20px 0; border: none; border-top: 2px solid #ecf0f1;">
                 <div class="breakdown-item">
+                    <span class="breakdown-label">Foyer fiscal : ${partsFiscales} part(s)</span>
+                    <span class="breakdown-value">Autres revenus : ${formatCurrency(autresRevenus)}</span>
+                </div>
+                <div class="breakdown-item">
                     <span class="breakdown-label">Salaire brut</span>
                     <span class="breakdown-value">${formatCurrency(salaireBrut)}</span>
                 </div>
@@ -475,7 +514,7 @@
                     <span class="breakdown-value">${formatCurrency(salaireNet)}</span>
                 </div>
                 <div class="breakdown-item">
-                    <span class="breakdown-label">- Impôt sur le revenu (salaire)</span>
+                    <span class="breakdown-label">- IR sur salaire (avec autres revenus foyer)</span>
                     <span class="breakdown-value">-${formatCurrency(irSalaire)}</span>
                 </div>
                 <div class="breakdown-item">
@@ -497,8 +536,12 @@
                 </div>
                 <hr style="margin: 20px 0; border: none; border-top: 2px solid #27ae60;">
                 <div class="breakdown-item">
-                    <span class="breakdown-label">TOTAL NET DANS LA POCHE</span>
+                    <span class="breakdown-label">TOTAL NET ANNUEL</span>
                     <span class="breakdown-value">${formatCurrency(totalNet)}</span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="breakdown-label">TOTAL NET MENSUEL MOYEN</span>
+                    <span class="breakdown-value">${formatCurrency(totalNet / 12)}</span>
                 </div>
             `;
 
