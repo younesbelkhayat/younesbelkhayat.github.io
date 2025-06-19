@@ -4,234 +4,115 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculateur SASU - Salaire Net Après Impôts</title>
+    <!-- Chart.js pour la courbe interactive -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+            min-height: 100vh; padding: 20px;
         }
-
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
+            max-width: 1200px; margin: 0 auto;
+            background: rgba(255,255,255,0.95); border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1); overflow: hidden;
         }
-
         .header {
             background: linear-gradient(135deg, #2c3e50, #34495e);
-            color: white;
-            padding: 30px;
-            text-align: center;
+            color: white; padding: 30px; text-align: center;
         }
-
-        .header h1 {
-            font-size: 2.5em;
-            font-weight: 300;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            opacity: 0.9;
-            font-size: 1.1em;
-        }
-
-        .content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0;
-        }
-
+        .header h1 { font-size: 2.5em; font-weight: 300; margin-bottom: 10px; }
+        .header p { opacity: 0.9; font-size: 1.1em; }
+        .content { display: grid; grid-template-columns: 1fr 1fr; }
         .input-section {
-            padding: 40px;
-            background: #f8f9fa;
-            border-right: 1px solid #e9ecef;
+            padding: 40px; background: #f8f9fa; border-right: 1px solid #e9ecef;
         }
-
-        .results-section {
-            padding: 40px;
-            background: white;
-        }
-
+        .results-section { padding: 40px; background: white; }
         .section-title {
-            font-size: 1.5em;
-            color: #2c3e50;
-            margin-bottom: 25px;
-            padding-bottom: 10px;
-            border-bottom: 3px solid #3498db;
+            font-size: 1.5em; color: #2c3e50; margin-bottom: 25px;
+            padding-bottom: 10px; border-bottom: 3px solid #3498db;
         }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
+        .form-group { margin-bottom: 25px; }
         label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #34495e;
+            display: block; margin-bottom: 8px; font-weight: 600; color: #34495e;
         }
-
         input[type="number"] {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s ease;
+            width: 100%; padding: 12px 15px; border: 2px solid #e9ecef;
+            border-radius: 10px; font-size: 16px; transition: all 0.3s ease;
         }
-
         input[type="number"]:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            outline: none; border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52,152,219,0.1);
         }
-
-        .radio-group {
-            display: flex;
-            gap: 20px;
-            margin-top: 10px;
-        }
-
+        .radio-group { display: flex; gap: 20px; margin-top: 10px; }
         .radio-option {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            padding: 10px 15px;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
+            display: flex; align-items: center; gap: 8px; cursor: pointer;
+            padding: 10px 15px; border: 2px solid #e9ecef; border-radius: 10px;
             transition: all 0.3s ease;
         }
-
-        .radio-option:hover {
-            background: #f8f9fa;
-            border-color: #3498db;
-        }
-
+        .radio-option:hover { background: #f8f9fa; border-color: #3498db; }
         .radio-option.selected {
-            background: #3498db;
-            color: white;
-            border-color: #3498db;
+            background: #3498db; color: white; border-color: #3498db;
         }
-
-        input[type="radio"] {
-            margin: 0;
-        }
-
+        input[type="radio"] { margin: 0; }
         .calculate-btn {
-            width: 100%;
-            padding: 15px;
+            width: 100%; padding: 15px;
             background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 20px;
+            color: white; border: none; border-radius: 10px;
+            font-size: 18px; font-weight: 600; cursor: pointer;
+            transition: all 0.3s ease; margin-top: 20px;
         }
-
         .calculate-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+            box-shadow: 0 10px 20px rgba(52,152,219,0.3);
         }
-
+        #optimize-btn {
+            background: linear-gradient(135deg, #27ae60, #1e8449);
+        }
+        #plot-btn {
+            background: linear-gradient(135deg, #8e44ad, #71368a);
+        }
         .result-card {
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 20px;
+            background: linear-gradient(135deg,#f8f9fa,#e9ecef);
+            border-radius: 15px; padding: 25px; margin-bottom: 20px;
             border-left: 5px solid #27ae60;
         }
-
         .result-main {
-            font-size: 2.5em;
-            font-weight: 700;
-            color: #27ae60;
+            font-size: 2.5em; font-weight: 700; color: #27ae60;
             margin-bottom: 10px;
         }
-
         .result-label {
-            font-size: 1.2em;
-            color: #7f8c8d;
-            margin-bottom: 20px;
+            font-size: 1.2em; color: #7f8c8d; margin-bottom: 20px;
         }
-
         .breakdown {
-            background: #fff;
-            border-radius: 15px;
-            padding: 25px;
+            background: #fff; border-radius: 15px; padding: 25px;
             margin-top: 20px;
         }
-
         .breakdown-title {
-            font-size: 1.3em;
-            color: #2c3e50;
-            margin-bottom: 20px;
+            font-size: 1.3em; color: #2c3e50; margin-bottom: 20px;
             text-align: center;
         }
-
         .breakdown-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #ecf0f1;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0; border-bottom: 1px solid #ecf0f1;
         }
-
         .breakdown-item:last-child {
-            border-bottom: none;
-            font-weight: 700;
-            font-size: 1.1em;
+            border-bottom: none; font-weight: 700; font-size: 1.1em;
             color: #27ae60;
         }
-
-        .breakdown-label {
-            color: #34495e;
-        }
-
-        .breakdown-value {
-            font-weight: 600;
-            color: #2c3e50;
-        }
-
+        .breakdown-label { color: #34495e; }
+        .breakdown-value { font-weight: 600; color: #2c3e50; }
         .warning {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
-            color: #856404;
+            background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 10px;
+            padding: 15px; margin-top: 20px; color: #856404;
         }
-
+        #netCurveChart { max-width: 100%; height: 400px; margin-top: 40px; }
         @media (max-width: 768px) {
-            .content {
-                grid-template-columns: 1fr;
-            }
-            
-            .input-section {
-                border-right: none;
-                border-bottom: 1px solid #e9ecef;
-            }
-            
-            .header h1 {
-                font-size: 2em;
-            }
-            
-            .result-main {
-                font-size: 2em;
-            }
+            .content { grid-template-columns: 1fr; }
+            .input-section { border-right: none; border-bottom: 1px solid #e9ecef; }
+            .header h1 { font-size: 2em; }
+            .result-main { font-size: 2em; }
         }
     </style>
 </head>
@@ -241,98 +122,70 @@
             <h1>Calculateur SASU</h1>
             <p>Calcul précis du salaire net après impôts - Année 2025</p>
         </div>
-        
         <div class="content">
             <div class="input-section">
                 <h2 class="section-title">Paramètres d'entrée</h2>
-                
                 <div class="form-group">
                     <label for="ca">Chiffre d'affaires annuel (€)</label>
                     <input type="number" id="ca" placeholder="Ex: 150000" min="0">
                 </div>
-                
                 <div class="form-group">
                     <label for="charges">Charges déductibles annuelles (€)</label>
                     <input type="number" id="charges" placeholder="Ex: 50000" min="0">
                 </div>
-                
                 <div class="form-group">
                     <label for="salaire">Salaire brut annuel du dirigeant (€)</label>
                     <input type="number" id="salaire" placeholder="Ex: 60000" min="0">
                 </div>
-                
-                <div class="form-group">
-                    <label for="partsFiscales">Nombre de parts fiscales du foyer</label>
-                    <input type="number" id="partsFiscales" placeholder="Ex: 2" min="0.5" step="0.5" value="1">
-                    <small style="color: #6c757d; font-size: 0.9em; margin-top: 5px; display: block;">
-                        💡 Célibataire: 1 part, Couple: 2 parts, +0,5 par enfant
-                    </small>
-                </div>
-                
-                <div class="form-group">
-                    <label for="autresRevenus">Autres revenus du foyer imposés à l'IR (€)</label>
-                    <input type="number" id="autresRevenus" placeholder="Ex: 25000" min="0" value="0">
-                    <small style="color: #6c757d; font-size: 0.9em; margin-top: 5px; display: block;">
-                        💡 Revenus du conjoint, revenus fonciers, etc.
-                    </small>
-                </div>
-                
                 <div class="form-group">
                     <label for="dividendes">Dividendes distribués (€)</label>
-                    <input type="number" id="dividendes" placeholder="Auto-calculé" min="0" readonly style="background-color: #f8f9fa; cursor: not-allowed;">
-                    <small style="color: #6c757d; font-size: 0.9em; margin-top: 5px; display: block;">
-                        💡 Montant calculé automatiquement : tout le bénéfice disponible après IS
+                    <input type="number" id="dividendes" placeholder="Auto-calculé" readonly
+                           style="background-color:#f8f9fa; cursor:not-allowed;">
+                    <small style="color:#6c757d; font-size:0.9em; margin-top:5px; display:block;">
+                        💡 tout le bénéfice disponible après IS
                     </small>
                 </div>
-                
                 <div class="form-group">
                     <label>Régime fiscal des dividendes</label>
                     <div class="radio-group">
-                        <div class="radio-option selected" onclick="selectDividendOption('pfu')">
+                        <div class="radio-option selected" data-opt="pfu" onclick="selectDividendOption('pfu')">
                             <input type="radio" name="dividendOption" value="pfu" checked>
-                            <span>PFU (Flat-tax 30%)</span>
+                            <span>PFU (30%)</span>
                         </div>
-                        <div class="radio-option" onclick="selectDividendOption('progressif')">
+                        <div class="radio-option" data-opt="progressif" onclick="selectDividendOption('progressif')">
                             <input type="radio" name="dividendOption" value="progressif">
                             <span>Barème progressif</span>
                         </div>
                     </div>
                 </div>
-                
                 <button class="calculate-btn" onclick="calculate()">Calculer</button>
+                <button id="optimize-btn" class="calculate-btn" onclick="optimizeSalary()">Optimiser le salaire brut</button>
+                <button id="plot-btn" class="calculate-btn" onclick="plotCurve()">Afficher la courbe</button>
             </div>
-            
             <div class="results-section">
                 <h2 class="section-title">Résultats</h2>
-                
                 <div class="result-card">
                     <div class="result-main" id="netTotal">0 €</div>
-                    <div class="result-label">Revenu net total dans la poche (annuel)</div>
+                    <div class="result-label">Revenu net total dans la poche</div>
                 </div>
-                
-                <div class="result-card" style="border-left-color: #e74c3c;">
-                    <div class="result-main" id="netMensuel" style="color: #e74c3c;">0 €</div>
-                    <div class="result-label">Revenu net mensuel moyen</div>
-                </div>
-                
                 <div class="breakdown">
                     <div class="breakdown-title">Détail des calculs</div>
                     <div id="breakdown-content">
-                        <p style="text-align: center; color: #7f8c8d; margin: 20px 0;">
-                            Remplissez les champs et cliquez sur "Calculer" pour voir le détail.
+                        <p style="text-align:center; color:#7f8c8d; margin:20px 0;">
+                            Remplissez et cliquez sur "Calculer", "Optimiser" ou "Afficher la courbe".
                         </p>
                     </div>
                 </div>
-                
+                <canvas id="netCurveChart"></canvas>
                 <div class="warning">
-                    <strong>Attention :</strong> Ce calculateur utilise les taux 2025 officiels. Les résultats sont donnés à titre indicatif. Consultez un expert-comptable pour une analyse précise de votre situation.
+                    <strong>Attention :</strong> Taux 2025 officiels indicatifs. Consultez un expert-comptable.
                 </div>
             </div>
         </div>
     </div>
-
     <script>
-        // Barème IR 2025
+        const TAUX_SALARIAL = 0.22;
+        const TAUX_PATRONAL = 0.40;
         const baremeIR = [
             { min: 0, max: 11497, taux: 0 },
             { min: 11498, max: 29315, taux: 0.11 },
@@ -341,232 +194,171 @@
             { min: 180295, max: Infinity, taux: 0.45 }
         ];
 
-        function selectDividendOption(option) {
-            document.querySelectorAll('.radio-option').forEach(el => el.classList.remove('selected'));
-            event.target.closest('.radio-option').classList.add('selected');
-            document.querySelector(`input[value="${option}"]`).checked = true;
-            
-            // Recalcul automatique si les données sont présentes
-            if (document.getElementById('ca').value && 
-                document.getElementById('charges').value && 
-                document.getElementById('salaire').value) {
-                calculate();
-            }
+        function selectDividendOption(opt) {
+            document.querySelectorAll('.radio-option')
+                .forEach(el => el.classList.toggle('selected', el.dataset.opt === opt));
+            document.querySelector(`input[value="${opt}"]`).checked = true;
+            calculate();
         }
 
-        function calculateIR(revenuImposable, partsFiscales = 1) {
-            const quotientFamilial = revenuImposable / partsFiscales;
-            let impotParPart = 0;
-            let restant = quotientFamilial;
-            
-            for (let tranche of baremeIR) {
-                if (restant <= 0) break;
-                
-                let imposableTranche = Math.min(restant, tranche.max - tranche.min + 1);
-                if (quotientFamilial > tranche.min) {
-                    impotParPart += imposableTranche * tranche.taux;
-                    restant -= imposableTranche;
+        function calculateIR(revenu) {
+            let imp = 0, reste = revenu;
+            for (let tr of baremeIR) {
+                if (reste <= 0) break;
+                let base = Math.min(reste, tr.max - tr.min + 1);
+                if (revenu > tr.min) {
+                    imp += base * tr.taux;
+                    reste -= base;
                 }
             }
-            
-            let impotTotal = impotParPart * partsFiscales;
-            
-            // Application de la décote (ajustée selon les parts)
-            const plafondDecote = partsFiscales === 1 ? 889 : (partsFiscales <= 2 ? 1470 : 1470);
-            const decote = impotTotal <= plafondDecote * 1.5 ? Math.max(0, plafondDecote - impotTotal * 0.75) : 0;
-            
-            return Math.max(0, impotTotal - decote);
+            if (revenu <= 14000) {
+                imp = Math.max(0, imp - (889 - imp * 0.75));
+            }
+            return imp;
         }
 
-        function calculateChargesSociales(salaireBrut) {
-            // Cotisations salariales (environ 22%)
-            const cotisationsSalariales = salaireBrut * 0.22;
-            
-            // Cotisations patronales (environ 40%)
-            const cotisationsPatronales = salaireBrut * 0.40;
-            
+        function calculateChargesSociales(brut) {
             return {
-                salariales: cotisationsSalariales,
-                patronales: cotisationsPatronales,
-                total: cotisationsSalariales + cotisationsPatronales
+                salariales: brut * TAUX_SALARIAL,
+                patronales: brut * TAUX_PATRONAL
             };
         }
 
-        function calculateIS(benefice) {
-            let is = 0;
-            
-            if (benefice <= 42500) {
-                // Taux réduit PME 15% jusqu'à 42 500€
-                is = benefice * 0.15;
-            } else {
-                // 15% sur les premiers 42 500€, puis 25% au-delà
-                is = 42500 * 0.15 + (benefice - 42500) * 0.25;
+        function calculateIS(benef) {
+            if (benef <= 42500) return benef * 0.15;
+            return 42500 * 0.15 + (benef - 42500) * 0.25;
+        }
+
+        function computeTotalNet(ca, charges, brut, regime) {
+            const cot = calculateChargesSociales(brut);
+            const benefAvantIS = ca - charges - brut - cot.patronales;
+            const is = calculateIS(Math.max(0, benefAvantIS));
+            const benefNet = Math.max(0, benefAvantIS - is);
+            const dividendes = benefNet;
+
+            const netSalarial = brut - cot.salariales;
+            const irSal = calculateIR(netSalarial);
+            const netSalApresIR = netSalarial - irSal;
+
+            let impotDiv = 0;
+            if (dividendes > 0) {
+                if (regime === 'pfu') {
+                    impotDiv = dividendes * 0.30;
+                } else {
+                    const abatt = dividendes * 0.60;
+                    const irDiv = calculateIR(netSalarial + abatt) - irSal;
+                    impotDiv = irDiv + dividendes * 0.172;
+                }
             }
-            
-            return is;
+            const dividNet = dividendes - impotDiv;
+            return {
+                totalNet: netSalApresIR + dividNet,
+                cot, benefAvantIS, is, dividendes,
+                netSalarial, irSal, netSalApresIR,
+                impotDiv, dividNet
+            };
         }
 
         function calculate() {
-            // Récupération des valeurs
             const ca = parseFloat(document.getElementById('ca').value) || 0;
             const charges = parseFloat(document.getElementById('charges').value) || 0;
-            const salaireBrut = parseFloat(document.getElementById('salaire').value) || 0;
-            const partsFiscales = parseFloat(document.getElementById('partsFiscales').value) || 1;
-            const autresRevenus = parseFloat(document.getElementById('autresRevenus').value) || 0;
-            const dividendRegime = document.querySelector('input[name="dividendOption"]:checked').value;
+            const brut = parseFloat(document.getElementById('salaire').value) || 0;
+            const regime = document.querySelector('input[name="dividendOption"]:checked').value;
+            const r = computeTotalNet(ca, charges, brut, regime);
 
-            // Calculs SASU
-            const chargesSociales = calculateChargesSociales(salaireBrut);
-            const beneficeAIS = ca - charges - salaireBrut - chargesSociales.patronales;
-            const is = calculateIS(Math.max(0, beneficeAIS));
-            const beneficeNetApresIS = Math.max(0, beneficeAIS - is);
+            document.getElementById('dividendes').value = Math.round(r.dividendes);
+            document.getElementById('netTotal').textContent = formatCurrency(r.totalNet);
 
-            // Auto-calcul des dividendes : tout le bénéfice disponible
-            const dividendesReel = beneficeNetApresIS;
-            
-            // Mise à jour du champ dividendes
-            document.getElementById('dividendes').value = Math.round(dividendesReel);
-
-            // Salaire net
-            const salaireNet = salaireBrut - chargesSociales.salariales;
-
-            // Calcul IR sur l'ensemble des revenus du foyer
-            let revenuImposableFoyer = salaireNet + autresRevenus;
-            let irFoyerSansDiv = calculateIR(revenuImposableFoyer, partsFiscales);
-            let irSurAutresRevenus = calculateIR(autresRevenus, partsFiscales);
-            let irSalaire = irFoyerSansDiv - irSurAutresRevenus;
-
-            const salaireNetApresIR = salaireNet - irSalaire;
-
-            // Calcul fiscal dividendes
-            let dividendesNetApresImpots = 0;
-            let impotDividendes = 0;
-
-            if (dividendesReel > 0) {
-                if (dividendRegime === 'pfu') {
-                    // PFU 30% (12,8% IR + 17,2% prélèvements sociaux)
-                    impotDividendes = dividendesReel * 0.30;
-                    dividendesNetApresImpots = dividendesReel - impotDividendes;
-                } else {
-                    // Barème progressif avec abattement 40%
-                    const dividendesApresAbattement = dividendesReel * 0.60;
-                    const revenuFoyerAvecDiv = revenuImposableFoyer + dividendesApresAbattement;
-                    const irFoyerAvecDiv = calculateIR(revenuFoyerAvecDiv, partsFiscales);
-                    const irDividendes = irFoyerAvecDiv - irFoyerSansDiv;
-                    const prelevementsSociaux = dividendesReel * 0.172;
-                    impotDividendes = irDividendes + prelevementsSociaux;
-                    dividendesNetApresImpots = dividendesReel - impotDividendes;
-                }
-            }
-
-            // Total dans la poche
-            const totalNet = salaireNetApresIR + dividendesNetApresImpots;
-
-            // Affichage des résultats
-            document.getElementById('netTotal').textContent = formatCurrency(totalNet);
-            document.getElementById('netMensuel').textContent = formatCurrency(totalNet / 12);
-
-            // Détail des calculs
-            const breakdownContent = `
-                <div class="breakdown-item">
-                    <span class="breakdown-label">Chiffre d'affaires</span>
-                    <span class="breakdown-value">${formatCurrency(ca)}</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">- Charges déductibles</span>
-                    <span class="breakdown-value">-${formatCurrency(charges)}</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">- Salaire brut</span>
-                    <span class="breakdown-value">-${formatCurrency(salaireBrut)}</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">- Charges sociales patronales</span>
-                    <span class="breakdown-value">-${formatCurrency(chargesSociales.patronales)}</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">= Bénéfice avant IS</span>
-                    <span class="breakdown-value">${formatCurrency(beneficeAIS)}</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">- Impôt sur les sociétés</span>
-                    <span class="breakdown-value">-${formatCurrency(is)}</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">= Bénéfice net après IS</span>
-                    <span class="breakdown-value">${formatCurrency(beneficeNetApresIS)}</span>
-                </div>
-                <hr style="margin: 20px 0; border: none; border-top: 2px solid #ecf0f1;">
-                <div class="breakdown-item">
-                    <span class="breakdown-label">Foyer fiscal : ${partsFiscales} part(s)</span>
-                    <span class="breakdown-value">Autres revenus : ${formatCurrency(autresRevenus)}</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">Salaire brut</span>
-                    <span class="breakdown-value">${formatCurrency(salaireBrut)}</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">- Charges sociales salariales</span>
-                    <span class="breakdown-value">-${formatCurrency(chargesSociales.salariales)}</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">= Salaire net avant IR</span>
-                    <span class="breakdown-value">${formatCurrency(salaireNet)}</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">- IR sur salaire (avec autres revenus foyer)</span>
-                    <span class="breakdown-value">-${formatCurrency(irSalaire)}</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">= Salaire net après IR</span>
-                    <span class="breakdown-value">${formatCurrency(salaireNetApresIR)}</span>
-                </div>
-                <hr style="margin: 20px 0; border: none; border-top: 2px solid #ecf0f1;">
-                <div class="breakdown-item">
-                    <span class="breakdown-label">Dividendes distribués</span>
-                    <span class="breakdown-value">${formatCurrency(dividendesReel)}</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">- Impôts sur dividendes (${dividendRegime === 'pfu' ? 'PFU 30%' : 'Barème + PS'})</span>
-                    <span class="breakdown-value">-${formatCurrency(impotDividendes)}</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">= Dividendes nets</span>
-                    <span class="breakdown-value">${formatCurrency(dividendesNetApresImpots)}</span>
-                </div>
-                <hr style="margin: 20px 0; border: none; border-top: 2px solid #27ae60;">
-                <div class="breakdown-item">
-                    <span class="breakdown-label">TOTAL NET ANNUEL</span>
-                    <span class="breakdown-value">${formatCurrency(totalNet)}</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">TOTAL NET MENSUEL MOYEN</span>
-                    <span class="breakdown-value">${formatCurrency(totalNet / 12)}</span>
-                </div>
+            document.getElementById('breakdown-content').innerHTML = `
+                <div class="breakdown-item"><span class="breakdown-label">CA</span><span class="breakdown-value">${formatCurrency(ca)}</span></div>
+                <div class="breakdown-item"><span class="breakdown-label">- Charges</span><span class="breakdown-value">-${formatCurrency(charges)}</span></div>
+                <div class="breakdown-item"><span class="breakdown-label">- Salaire brut</span><span class="breakdown-value">-${formatCurrency(brut)}</span></div>
+                <div class="breakdown-item"><span class="breakdown-label">- Cot. patronales</span><span class="breakdown-value">-${formatCurrency(r.cot.patronales)}</span></div>
+                <div class="breakdown-item"><span class="breakdown-label">= Bénéf. avant IS</span><span class="breakdown-value">${formatCurrency(r.benefAvantIS)}</span></div>
+                <div class="breakdown-item"><span class="breakdown-label">- IS</span><span class="breakdown-value">-${formatCurrency(r.is)}</span></div>
+                <div class="breakdown-item"><span class="breakdown-label">= Bénéf. net</span><span class="breakdown-value">${formatCurrency(r.benefAvantIS - r.is)}</span></div>
+                <hr style="border-top:2px solid #ecf0f1;">
+                <div class="breakdown-item"><span class="breakdown-label">Salaire net avant IR</span><span class="breakdown-value">${formatCurrency(r.netSalarial)}</span></div>
+                <div class="breakdown-item"><span class="breakdown-label">- IR salaire</span><span class="breakdown-value">-${formatCurrency(r.irSal)}</span></div>
+                <div class="breakdown-item"><span class="breakdown-label">= Salaire net</span><span class="breakdown-value">${formatCurrency(r.netSalApresIR)}</span></div>
+                <hr style="border-top:2px solid #ecf0f1;">
+                <div class="breakdown-item"><span class="breakdown-label">Dividendes</span><span class="breakdown-value">${formatCurrency(r.dividendes)}</span></div>
+                <div class="breakdown-item"><span class="breakdown-label">- Impôts dividendes</span><span class="breakdown-value">-${formatCurrency(r.impotDiv)}</span></div>
+                <div class="breakdown-item"><span class="breakdown-label">= Dividendes nets</span><span class="breakdown-value">${formatCurrency(r.dividNet)}</span></div>
+                <hr style="border-top:2px solid #27ae60;">
+                <div class="breakdown-item"><span class="breakdown-label">TOTAL NET</span><span class="breakdown-value">${formatCurrency(r.totalNet)}</span></div>
             `;
-
-            document.getElementById('breakdown-content').innerHTML = breakdownContent;
         }
 
-        function formatCurrency(amount) {
-            return new Intl.NumberFormat('fr-FR', {
-                style: 'currency',
-                currency: 'EUR',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            }).format(amount);
+        function optimizeSalary() {
+            const ca = parseFloat(document.getElementById('ca').value);
+            const charges = parseFloat(document.getElementById('charges').value);
+            const regime = document.querySelector('input[name="dividendOption"]:checked').value;
+            if (isNaN(ca) || isNaN(charges)) {
+                return alert("Merci de remplir CA et charges.");
+            }
+            const maxBrut = (ca - charges) / (1 + TAUX_PATRONAL);
+            const step = 100;
+            let best = { brut: 0, net: -Infinity };
+            for (let b = 0; b <= maxBrut; b += step) {
+                const r = computeTotalNet(ca, charges, b, regime);
+                if (r.totalNet > best.net) best = { brut: b, net: r.totalNet };
+            }
+            alert(
+                `Salaire brut optimal : ${formatCurrency(best.brut)}\n` +
+                `Revenu net : ${formatCurrency(best.net)} (pas ${step}€)`
+            );
         }
 
-        // Calcul automatique lors de la saisie (excluant le champ dividendes qui est auto-calculé)
-        document.querySelectorAll('input:not(#dividendes)').forEach(input => {
-            input.addEventListener('input', () => {
-                if (document.getElementById('ca').value && 
-                    document.getElementById('charges').value && 
-                    document.getElementById('salaire').value) {
-                    calculate();
+        let netChart = null;
+        function plotCurve() {
+            const ca = parseFloat(document.getElementById('ca').value);
+            const charges = parseFloat(document.getElementById('charges').value);
+            const regime = document.querySelector('input[name="dividendOption"]:checked').value;
+            if (isNaN(ca) || isNaN(charges)) {
+                return alert("Merci de remplir CA et charges.");
+            }
+            const maxBrut = (ca - charges) / (1 + TAUX_PATRONAL);
+            const points = 50;
+            const step = maxBrut / points;
+            const labels = [], data = [];
+            for (let b = 0; b <= maxBrut; b += step) {
+                labels.push(formatCurrency(b));
+                data.push(computeTotalNet(ca, charges, b, regime).totalNet);
+            }
+            const ctx = document.getElementById('netCurveChart').getContext('2d');
+            if (netChart) netChart.destroy();
+            netChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Revenu net annuel',
+                        data,
+                        fill: false,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: { title: { display: true, text: 'Salaire brut annuel' } },
+                        y: { title: { display: true, text: 'Net dans la poche' } }
+                    },
+                    plugins: {
+                        tooltip: { callbacks: { label(ctx) { return formatCurrency(ctx.parsed.y); } } }
+                    }
                 }
             });
-        });
+        }
+
+        function formatCurrency(x) {
+            return new Intl.NumberFormat('fr-FR', {
+                style: 'currency', currency: 'EUR', minimumFractionDigits: 0
+            }).format(x);
+        }
+
+        document.querySelectorAll('input:not(#dividendes)').forEach(i => i.addEventListener('input', calculate));
     </script>
 </body>
 </html>
